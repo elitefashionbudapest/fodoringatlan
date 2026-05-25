@@ -1,5 +1,13 @@
 <?php
 require_once __DIR__ . '/cors.php';
+
+// Catch any uncaught exception/error and return JSON instead of empty response
+set_exception_handler(function(Throwable $e) {
+    http_response_code(500);
+    echo json_encode(['success' => false, 'error' => $e->getMessage(), 'code' => 500], JSON_UNESCAPED_UNICODE);
+    exit;
+});
+
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/config.php';
@@ -85,8 +93,11 @@ switch ($method) {
 
         if ($action === 'save_config') {
             $cfg_path = __DIR__ . '/config.php';
+            if (!file_exists($cfg_path)) {
+                json_error('config.php nem található — futtasd az installert újra', 500);
+            }
             if (!is_writable($cfg_path)) {
-                json_error('config.php nem írható — ellenőrizze a fájl jogosultságokat (chmod 644)', 500);
+                json_error('config.php nem írható — chmod 644 szükséges', 500);
             }
 
             $field_map = [
@@ -104,21 +115,34 @@ switch ($method) {
             ];
 
             $content = file_get_contents($cfg_path);
+            if ($content === false) {
+                json_error('config.php olvasása sikertelen', 500);
+            }
             $updated = [];
 
             foreach ($body as $key => $val) {
                 $key = strtolower(sanitize_input((string)$key));
                 if (!isset($field_map[$key])) continue;
                 $val = (string)$val;
-                if ($val === '' || $val === str_repeat('*', strlen($val))) continue; // skip masked/empty
-                $const = $field_map[$key];
-                $escaped = addslashes($val);
-                // Replace existing define line
-                $new = preg_replace(
-                    "/define\('{$const}',\s*'[^']*'\)/",
-                    "define('{$const}', '{$escaped}')",
+                // Skip: empty, all-asterisks, or masked pattern (e.g. "****XX")
+                if ($val === '') continue;
+                if (preg_match('/^\*+$/', $val)) continue;
+                if (preg_match('/^\*{4,}[^*]{1,3}$/', $val)) continue;
+
+                $const        = $field_map[$key];
+                $const_quoted = preg_quote($const, '/');
+                $val_to_write = $val;
+
+                // Use preg_replace_callback to avoid PCRE backreference issues in replacement string.
+                // Pattern matches both quoted strings and unquoted integers (e.g. define('PORT', 587))
+                $new = preg_replace_callback(
+                    "/define\('{$const_quoted}',\s*(?:'[^']*'|[0-9]+)\)/",
+                    function() use ($const, $val_to_write) {
+                        return "define('" . $const . "', '" . addslashes($val_to_write) . "')";
+                    },
                     $content
                 );
+
                 if ($new !== null && $new !== $content) {
                     $content = $new;
                     $updated[] = $key;
@@ -126,7 +150,7 @@ switch ($method) {
             }
 
             if (empty($updated)) {
-                json_response(['success' => true, 'message' => 'Nincs változtatás.', 'updated' => []]);
+                json_response(['success' => true, 'message' => 'Nincs változtatás (értékek megegyeznek).', 'updated' => []]);
             }
 
             if (file_put_contents($cfg_path, $content) === false) {
