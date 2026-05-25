@@ -280,20 +280,15 @@ function insert_templates(PDO $pdo, string $logo_html): void {
 
 '<!-- BODY -->' .
 '<tr><td style="background:#FFFFFF;padding:32px 36px;">' .
-'<p style="margin:0 0 16px;font-size:15px;color:#1F2D3D;font-weight:600;">Kedves {{nev}}!</p>' .
-'<p style="margin:0 0 14px;font-size:14px;color:#3A4A5C;line-height:1.7;">Örömünkre szolgált, hogy segíthettünk az ingatlanügylet sikeres lezárásában.</p>' .
-'<p style="margin:0 0 24px;font-size:14px;color:#3A4A5C;line-height:1.7;">Ha elégedett volt {{ugynok_nev}} munkájával, kérjük, ossza meg tapasztalatait egy rövid Google értékelés formájában. Néhány sor is sokat számít.</p>' .
+'<p style="margin:0 0 20px;font-size:15px;color:#1F2D3D;font-weight:600;">Kedves {{ugyfelnev}}!</p>' .
+'<p style="margin:0 0 14px;font-size:14px;color:#3A4A5C;line-height:1.8;">Köszönjük a bizalmát és a közös munkát. Öröm számunkra, hogy segíthettünk Önnek az ingatlanügylet sikeres lezárásában.</p>' .
+'<p style="margin:0 0 14px;font-size:14px;color:#3A4A5C;line-height:1.8;">A Fodor Ingatlan Közvetítő Kft.-nél arra törekszünk, hogy ügyfeleink ne csupán eredményes, hanem valóban nyugodt és pozitív élményként éljék meg az ingatlanközvetítés folyamatát.</p>' .
+'<p style="margin:0 0 28px;font-size:14px;color:#3A4A5C;line-height:1.8;">Amennyiben elégedett volt szolgáltatásunkkal, nagyra értékelnénk, ha megosztaná tapasztalatait egy Google értékelés formájában. Néhány kedves mondat sokat segít azoknak is, akik jelenleg keresik a számukra megfelelő ingatlanirodát.</p>' .
 
-'<table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;"><tr>' .
-'<td style="background:#FBF7EF;border-left:3px solid #B8935A;border-radius:0 6px 6px 0;padding:14px 18px;">' .
-'<div style="font-size:18px;margin-bottom:4px;">⭐⭐⭐⭐⭐</div>' .
-'<div style="font-size:12.5px;color:#6E7A88;font-style:italic;line-height:1.5;">Az értékelése más ügyfeleknek is segít a döntésben.</div>' .
-'</td></tr></table>' .
-
-'<table cellpadding="0" cellspacing="0" style="margin:0 auto 24px;">' .
+'<table cellpadding="0" cellspacing="0" style="margin:0 auto 28px;">' .
 '<tr><td align="center">{{review_link_html}}</td></tr></table>' .
 
-'<p style="margin:0;font-size:11.5px;color:#9AA3AC;text-align:center;line-height:1.6;">A gombra kattintva közvetlenül a Google értékelő felületre jut. Az értékelés pár percet vesz igénybe.</p>' .
+'<p style="margin:0;font-size:11.5px;color:#9AA3AC;text-align:center;line-height:1.6;">A gombra kattintva közvetlenül a Google értékelő felületre jut.</p>' .
 '</td></tr>' .
 
 '<!-- FOOTER -->' .
@@ -311,7 +306,7 @@ function insert_templates(PDO $pdo, string $logo_html): void {
 
 '</table></td></tr></table></body></html>';
 
-    $text1 = "Kedves {{nev}}!\n\nÖrömünkre szolgált, hogy segíthettünk az ingatlanügylet sikeres lezárásában.\n\nHa elégedett volt {{ugynok_nev}} munkájával, kérjük, ossza meg tapasztalatait egy rövid Google értékelés formájában:\n\n{{review_link}}\n\nKöszönjük!\n\n{{ugynok_nev}}\nIngatlanközvetítő · Fodor Ingatlan Kft.\n{{ugynok_telefon}}";
+    $text1 = "Kedves {{ugyfelnev}}!\n\nKöszönjük a bizalmát és a közös munkát. Öröm számunkra, hogy segíthettünk Önnek az ingatlanügylet sikeres lezárásában.\n\nA Fodor Ingatlan Közvetítő Kft.-nél arra törekszünk, hogy ügyfeleink ne csupán eredményes, hanem valóban nyugodt és pozitív élményként éljék meg az ingatlanközvetítés folyamatát.\n\nAmennyiben elégedett volt szolgáltatásunkkal, nagyra értékelnénk, ha megosztaná tapasztalatait egy Google értékelés formájában:\n\n{{review_link}}\n\nKöszönjük!\n\n{{ugynok_nev}}\nIngatlanközvetítő · Fodor Ingatlan Kft.\n{{ugynok_telefon}}";
 
     $pdo->prepare("INSERT INTO email_templates (id,name,channel,subject,body_html,body_text,variables) VALUES (1,?,?,?,?,?,?)")
         ->execute([
