@@ -76,6 +76,7 @@ switch ($method) {
                 'secret_set' => !empty(RECAPTCHA_SECRET_KEY),
             ],
             'app' => [
+                'url'       => APP_URL,
                 'env'       => APP_ENV,
                 'log_level' => LOG_LEVEL,
             ],

@@ -1736,6 +1736,9 @@ function SettingsView() {
   const [smtpForm, setSmtpForm] = useState({ smtp_host:'', smtp_user:'', smtp_pass:'', smtp_port:'587', smtp_from_name:'', smtp_secure:'tls' });
   const [twilioForm, setTwilioForm] = useState({ twilio_sid:'', twilio_token:'', twilio_from:'' });
   const [googleForm, setGoogleForm] = useState({ google_api_key:'' });
+  const [appForm, setAppForm] = useState({ app_url:'' });
+  const [appSaveMsg, setAppSaveMsg] = useState('');
+  const [savingApp, setSavingApp] = useState(false);
   const [users, setUsers] = useState([]);
   const [userModal, setUserModal] = useState(null);
   const [userErr, setUserErr] = useState('');
@@ -1767,6 +1770,9 @@ function SettingsView() {
           ...f,
           twilio_from: c.twilio.from || '',
         }));
+      }
+      if (c?.app?.url) {
+        setAppForm({ app_url: c.app.url });
       }
       setLoading(false);
     }).catch(() => setLoading(false));
@@ -1831,6 +1837,26 @@ function SettingsView() {
 
   return (
     <div style={{padding: isMobile ? 14 : 24, display:'flex', flexDirection:'column', gap:14}}>
+
+      {/* APP URL */}
+      <Card title="Alkalmazás URL" subtitle="Az oldal gyökér URL-je — email linkek (tracking, értékelés) ezt használják">
+        <div style={{display:'flex', gap:10, alignItems:'flex-end', flexWrap:'wrap'}}>
+          <div style={{flex:1, minWidth:200}}>
+            <div style={{fontSize:11, color:C.mute, marginBottom:4, fontFamily:'"DM Mono", monospace', letterSpacing:0.6}}>APP URL</div>
+            <input
+              type="text"
+              value={appForm.app_url}
+              onChange={e => setAppForm({app_url: e.target.value})}
+              placeholder="https://fodoringatlan.hu"
+              style={{width:'100%', boxSizing:'border-box', padding:'8px 12px', borderRadius:6, border:`1px solid ${C.line}`, fontSize:13, fontFamily:'"DM Mono", monospace'}}
+            />
+          </div>
+          <button onClick={() => saveConfig(appForm, setAppSaveMsg, setSavingApp)} disabled={savingApp} style={{...pillBtn(true), padding:'8px 14px', whiteSpace:'nowrap'}}>
+            {savingApp ? 'Mentés...' : 'Mentés'}
+          </button>
+          {appSaveMsg && <span style={{fontSize:12, color: appSaveMsg.startsWith('✓') ? C.ok : C.bad, fontWeight:600}}>{appSaveMsg}</span>}
+        </div>
+      </Card>
 
       {/* SMTP */}
       <Card title="Email / SMTP" subtitle="Tárhely.eu SMTP beállítások — mentés után azonnal aktív">
