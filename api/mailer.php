@@ -87,35 +87,45 @@ function mailer_build_vars(array $entry): array
     $tracking_url = !empty($nps_token)
         ? $base_url . '/click.php?t=' . urlencode($nps_token)
         : $direct_link;
-    $nps_url = !empty($nps_token)
-        ? $base_url . '/nps.php?t=' . urlencode($nps_token)
-        : '';
-    $nps_link_html = !empty($nps_url)
-        ? '<a href="' . htmlspecialchars($nps_url, ENT_QUOTES) . '" style="display:inline-block;background:#1F2D3D;color:#F5F0E6;padding:12px 24px;border-radius:6px;text-decoration:none;font-weight:600;">Értékelés küldése →</a>'
+
+    $btn_style = 'display:inline-block;background:#1F2D3D;color:#F5F0E6;padding:14px 28px;border-radius:8px;text-decoration:none;font-weight:700;font-size:16px;font-family:Arial,sans-serif;';
+    $review_link_html = !empty($tracking_url)
+        ? '<a href="' . htmlspecialchars($tracking_url, ENT_QUOTES) . '" style="' . $btn_style . '">Értékelés írása →</a>'
         : '';
 
     return [
-        'nev'            => $first_name,
-        'ugyfelnev'      => $entry['contact_name']    ?? '',
-        'ugynok_nev'     => $entry['agent_name']      ?? '',
-        'ugynok_alairas' => $entry['agent_signature'] ?? ($entry['agent_name'] ?? ''),
-        'iroda_neve'     => $entry['office_name']     ?? '',
-        'iroda_cim'      => $entry['office_address']  ?? '',
-        'review_link'    => $tracking_url,
-        'nps_link'       => $nps_url,
-        'nps_link_html'  => $nps_link_html,
+        'nev'              => $first_name,
+        'ugyfelnev'        => $entry['contact_name']    ?? '',
+        'ugynok_nev'       => $entry['agent_name']      ?? '',
+        'ugynok_telefon'   => $entry['agent_phone']     ?? '',
+        'ugynok_alairas'   => $entry['agent_signature'] ?? ($entry['agent_name'] ?? ''),
+        'iroda_neve'       => $entry['office_name']     ?? '',
+        'iroda_cim'        => $entry['office_address']  ?? '',
+        'review_link'      => $tracking_url,
+        'review_link_html' => $review_link_html,
+        // backward compat
+        'nps_link'         => $tracking_url,
+        'nps_link_html'    => $review_link_html,
     ];
 }
 
 function mailer_apply_vars(string $text, array $vars, bool $escape_html = false): string
 {
-    $html_link = $vars['nps_link_html'] ?? '';
-    unset($vars['nps_link_html']);
+    // Extract raw HTML vars first (must not be escaped)
+    $raw_html_keys = ['nps_link_html', 'review_link_html'];
+    $raw = [];
+    foreach ($raw_html_keys as $k) {
+        $raw[$k] = $vars[$k] ?? '';
+        unset($vars[$k]);
+    }
     foreach ($vars as $k => $v) {
         $val  = $escape_html ? htmlspecialchars((string)$v, ENT_QUOTES, 'UTF-8') : (string)$v;
         $text = str_replace('{{' . $k . '}}', $val, $text);
     }
-    return str_replace('{{nps_link_html}}', $html_link, $text);
+    foreach ($raw as $k => $v) {
+        $text = str_replace('{{' . $k . '}}', $v, $text);
+    }
+    return $text;
 }
 
 /**
@@ -128,6 +138,7 @@ function mailer_flush_request(int $request_id): array
         "SELECT sq.*,
                 c.name        AS contact_name,
                 a.name        AS agent_name,
+                a.phone       AS agent_phone,
                 a.signature   AS agent_signature,
                 a.review_link AS agent_review_link,
                 o.name        AS office_name,
@@ -138,7 +149,7 @@ function mailer_flush_request(int $request_id): array
          LEFT JOIN contacts c ON c.id = rr.contact_id
          LEFT JOIN agents   a ON a.id = rr.agent_id
          LEFT JOIN offices  o ON o.id = a.office_id
-         WHERE sq.request_id = ? AND sq.status = 'queued'",
+         WHERE sq.request_id = ? AND sq.status IN ('queued','pending')",
         [$request_id]
     );
 
