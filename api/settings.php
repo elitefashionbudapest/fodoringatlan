@@ -11,12 +11,6 @@ set_exception_handler(function(Throwable $e) {
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/config.php';
-require_once __DIR__ . '/../vendor/phpmailer/Exception.php';
-require_once __DIR__ . '/../vendor/phpmailer/SMTP.php';
-require_once __DIR__ . '/../vendor/phpmailer/PHPMailer.php';
-
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception as PHPMailerException;
 
 require_auth();
 rate_limit_check('settings');
@@ -198,23 +192,29 @@ switch ($method) {
         }
 
         if ($action === 'test_smtp') {
-            // Test SMTP connection by sending a test email
+            $phpmailer_base = __DIR__ . '/../vendor/phpmailer';
+            if (!file_exists($phpmailer_base . '/PHPMailer.php')) {
+                json_error('PHPMailer hiányzik: töltsd fel a vendor/phpmailer/ mappát a szerverre.', 500);
+            }
+            require_once $phpmailer_base . '/Exception.php';
+            require_once $phpmailer_base . '/SMTP.php';
+            require_once $phpmailer_base . '/PHPMailer.php';
+
             $to = sanitize_input($body['test_email'] ?? '');
             if (!filter_var($to, FILTER_VALIDATE_EMAIL)) {
                 json_error('Érvénytelen email cím', 400);
             }
 
-            $config_file = __DIR__ . '/config.php';
-            // Can't actually update config.php at runtime safely — guide user to edit manually
-            // Just test the current connection
             try {
-                $mail = new PHPMailer(true);
+                $mail = new PHPMailer\PHPMailer\PHPMailer(true);
                 $mail->isSMTP();
                 $mail->Host       = SMTP_HOST;
                 $mail->SMTPAuth   = true;
                 $mail->Username   = SMTP_USER;
                 $mail->Password   = SMTP_PASS;
-                $mail->SMTPSecure = SMTP_SECURE === 'ssl' ? PHPMailer::ENCRYPTION_SMTPS : PHPMailer::ENCRYPTION_STARTTLS;
+                $mail->SMTPSecure = SMTP_SECURE === 'ssl'
+                    ? PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_SMTPS
+                    : PHPMailer\PHPMailer\PHPMailer::ENCRYPTION_STARTTLS;
                 $mail->Port       = SMTP_PORT;
                 $mail->SMTPDebug  = 0;
                 $mail->CharSet    = 'UTF-8';
@@ -226,7 +226,7 @@ switch ($method) {
                 $mail->send();
                 log_event('info', 'SMTP test sikeres', ['to' => $to]);
                 json_response(['success' => true, 'message' => 'Teszt email elküldve: ' . $to]);
-            } catch (PHPMailerException $e) {
+            } catch (PHPMailer\PHPMailer\Exception $e) {
                 log_event('error', 'SMTP teszt sikertelen', ['error' => $e->getMessage()]);
                 json_error('SMTP hiba: ' . $e->getMessage(), 500);
             }
