@@ -15,14 +15,7 @@ if (php_sapi_name() !== 'cli') {
 
 require __DIR__ . '/../api/config.php';
 require __DIR__ . '/../api/db.php';
-
-require_once __DIR__ . '/../vendor/phpmailer/phpmailer.php';
-require_once __DIR__ . '/../vendor/phpmailer/smtp.php';
-require_once __DIR__ . '/../vendor/phpmailer/exception.php';
-
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\SMTP;
-use PHPMailer\PHPMailer\Exception;
+require __DIR__ . '/../api/mailer.php';
 
 $start_time         = microtime(true);
 $emails_sent        = 0;
@@ -128,7 +121,7 @@ foreach ($pending as $entry) {
     if ($channel === 'email') {
         $to_address = $entry['to_address'] ?? '';
         if ($to_address) {
-            $result = _cron_send_email([
+            $result = mailer_send_email([
                 'to_email'  => $to_address,
                 'to_name'   => $entry['to_name'] ?? '',
                 'subject'   => $subject,
@@ -153,7 +146,7 @@ foreach ($pending as $entry) {
     if ($channel === 'sms') {
         $to_address = $entry['to_address'] ?? '';
         if ($to_address) {
-            $result = _cron_send_sms($to_address, $body_text);
+            $result = mailer_send_sms($to_address, $body_text);
             if ($result['success']) {
                 $success = true;
                 $sms_sent++;
@@ -349,86 +342,3 @@ log_event('info', 'process_queue: complete', [
 ]);
 
 exit($failed > 0 ? 1 : 0);
-
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-function _cron_send_email(array $data): array
-{
-    $mail = new PHPMailer(true);
-
-    try {
-        $mail->isSMTP();
-        $mail->Host       = SMTP_HOST;
-        $mail->SMTPAuth   = true;
-        $mail->Username   = SMTP_USER;
-        $mail->Password   = SMTP_PASS;
-        $mail->Port       = (int)SMTP_PORT;
-        $mail->SMTPDebug  = SMTP::DEBUG_OFF;
-
-        $secure = defined('SMTP_SECURE') ? strtolower(SMTP_SECURE) : 'tls';
-        $mail->SMTPSecure = ($secure === 'ssl')
-            ? PHPMailer::ENCRYPTION_SMTPS
-            : PHPMailer::ENCRYPTION_STARTTLS;
-
-        $from_name = defined('SMTP_FROM_NAME') ? SMTP_FROM_NAME : 'Fodor Ingatlan';
-        $mail->setFrom(SMTP_USER, $from_name);
-        $mail->addAddress($data['to_email'], $data['to_name'] ?? '');
-        $mail->addReplyTo(SMTP_USER, $from_name);
-
-        $mail->isHTML(true);
-        $mail->CharSet = 'UTF-8';
-        $mail->Subject = $data['subject'];
-        $mail->Body    = $data['body_html'];
-        $mail->AltBody = $data['body_text'] ?: strip_tags($data['body_html']);
-
-        $mail->send();
-
-        return ['success' => true, 'message_id' => $mail->getLastMessageID(), 'error' => null];
-
-    } catch (Exception $e) {
-        return ['success' => false, 'message_id' => null, 'error' => $mail->ErrorInfo];
-    }
-}
-
-function _cron_send_sms(string $to, string $body): array
-{
-    $sid   = TWILIO_SID;
-    $token = TWILIO_TOKEN;
-    $from  = TWILIO_FROM;
-
-    $url = "https://api.twilio.com/2010-04-01/Accounts/{$sid}/Messages.json";
-
-    $ch = curl_init($url);
-    curl_setopt_array($ch, [
-        CURLOPT_RETURNTRANSFER => true,
-        CURLOPT_POST           => true,
-        CURLOPT_POSTFIELDS     => http_build_query([
-            'To'   => $to,
-            'From' => $from,
-            'Body' => $body,
-        ]),
-        CURLOPT_USERPWD        => "{$sid}:{$token}",
-        CURLOPT_HTTPAUTH       => CURLAUTH_BASIC,
-        CURLOPT_SSL_VERIFYPEER => true,
-        CURLOPT_TIMEOUT        => 30,
-        CURLOPT_HTTPHEADER     => ['Accept: application/json'],
-    ]);
-
-    $response  = curl_exec($ch);
-    $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-    $curl_err  = curl_error($ch);
-    curl_close($ch);
-
-    if ($curl_err) {
-        return ['success' => false, 'message_id' => null, 'error' => $curl_err];
-    }
-
-    $data = json_decode($response, true);
-
-    if ($http_code >= 200 && $http_code < 300 && isset($data['sid'])) {
-        return ['success' => true, 'message_id' => $data['sid'], 'error' => null];
-    }
-
-    $error_msg = $data['message'] ?? "HTTP {$http_code}";
-    return ['success' => false, 'message_id' => null, 'error' => $error_msg];
-}

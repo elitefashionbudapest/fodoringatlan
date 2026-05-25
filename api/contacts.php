@@ -13,6 +13,7 @@
 
 require_once __DIR__ . '/cors.php';
 require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/mailer.php';
 require_once __DIR__ . '/db.php';
 require_once __DIR__ . '/audit.php';
 
@@ -326,6 +327,13 @@ if ($method === 'POST') {
                 'channel'       => $channel,
                 'delay_hours'   => $delay_hours,
             ]);
+
+            // Immediately send if no delay (no cron dependency)
+            if ($delay_hours === 0) {
+                $send_result = mailer_flush_request($request_id);
+                log_event('info', 'Immediate send result', $send_result);
+            }
+
             $review_request_queued = true;
         }
     }
