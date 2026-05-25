@@ -193,7 +193,7 @@ switch ($method) {
 
         if ($action === 'test_smtp') {
             $phpmailer_base = __DIR__ . '/../vendor/phpmailer';
-            if (!file_exists($phpmailer_base . '/PHPMailer.php')) {
+            if (!file_exists($phpmailer_base . '/phpmailer.php')) {
                 json_error('PHPMailer hiányzik: töltsd fel a vendor/phpmailer/ mappát a szerverre.', 500);
             }
             require_once $phpmailer_base . '/exception.php';
