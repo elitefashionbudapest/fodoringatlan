@@ -1,0 +1,8 @@
+# Block all web access to cron scripts
+# These run only via server cron job (CLI), never via HTTP
+<IfModule mod_authz_core.c>
+    Require all denied
+</IfModule>
+<IfModule !mod_authz_core.c>
+    Deny from all
+</IfModule>

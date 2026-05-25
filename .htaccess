@@ -1,0 +1,73 @@
+Options -Indexes -MultiViews
+
+# Security headers
+<IfModule mod_headers.c>
+    Header always set X-Content-Type-Options "nosniff"
+    Header always set X-Frame-Options "DENY"
+    Header always set X-XSS-Protection "1; mode=block"
+    Header always set Referrer-Policy "strict-origin-when-cross-origin"
+    Header always set Permissions-Policy "geolocation=(), microphone=(), camera=()"
+    Header always set Strict-Transport-Security "max-age=31536000; includeSubDomains"
+</IfModule>
+
+# Block direct access to sensitive files
+<FilesMatch "\.(sql|log|db|env|json|md|sh|bak|tmp)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# Block access to hidden files and directories
+<FilesMatch "^\.">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# PHP security settings
+<IfModule mod_php8.c>
+    php_flag display_errors Off
+    php_flag log_errors On
+    php_flag expose_php Off
+    php_value session.cookie_httponly 1
+    php_value session.cookie_samesite "Strict"
+    php_value session.use_strict_mode 1
+</IfModule>
+<IfModule mod_php7.c>
+    php_flag display_errors Off
+    php_flag log_errors On
+    php_flag expose_php Off
+    php_value session.cookie_httponly 1
+    php_value session.cookie_samesite "Strict"
+    php_value session.use_strict_mode 1
+</IfModule>
+
+# Protect vendor directory
+<DirectoryMatch "vendor">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Deny from all
+    </IfModule>
+</DirectoryMatch>
+
+# Allow only .php and static frontend files
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+
+    # Block access to cron directory from web
+    RewriteRule ^cron/ - [F,L]
+
+    # Prevent access to data directory
+    RewriteRule ^data/ - [F,L]
+</IfModule>
+
+# Disable server signature
+ServerSignature Off

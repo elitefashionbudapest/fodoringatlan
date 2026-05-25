@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="hu">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Fodor Értékelő</title>
+<link rel="icon" type="image/svg+xml" href="favicon.svg"/>
+<link rel="shortcut icon" href="favicon.svg"/>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=DM+Serif+Display&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body {
+    margin: 0; padding: 0;
+    background: #F8F5EE;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #D9CBA8; border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: #B8935A; }
+  button { font-family: inherit; }
+  input, textarea, select { font-family: inherit; }
+  #root { min-height: 100vh; }
+  * { -webkit-tap-highlight-color: transparent; }
+  @media (max-width: 767px) {
+    html, body { overflow-x: hidden; }
+  }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50%       { opacity: 0.5; transform: scale(1.4); }
+  }
+  .pulse-dot { animation: pulse-dot 1.6s ease-in-out infinite; }
+</style>
+</head>
+<body>
+<div id="root"></div>
+
+<!-- React 18 UMD -->
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" crossorigin="anonymous"></script>
+
+<!-- Babel standalone (JSX transpiler in-browser) -->
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" crossorigin="anonymous"></script>
+
+<!-- Shared components: C palette, Ico icons, Stars, Logo, Sidebar, TopBar, cards, modals, charts -->
+<script type="text/babel" src="app-core.jsx" data-presets="react"></script>
+
+<!-- Views + routing + ReactDOM.createRoot mount -->
+<script type="text/babel" src="app-views.jsx" data-presets="react"></script>
+</body>
+</html>
