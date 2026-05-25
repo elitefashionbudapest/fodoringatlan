@@ -542,6 +542,18 @@ if ($method === 'PUT') {
     json_response(['id' => $id, 'message' => 'Request updated']);
 }
 
+if ($method === 'DELETE') {
+    if (!$id) json_error('id is required');
+    $rr = db_fetch_one('SELECT id FROM review_requests WHERE id = ?', [$id]);
+    if (!$rr) json_error('Review request not found', 404);
+    db_run('DELETE FROM send_queue WHERE request_id = ?', [$id]);
+    db_run('DELETE FROM follow_ups WHERE request_id = ?', [$id]);
+    db_run('DELETE FROM review_requests WHERE id = ?', [$id]);
+    audit_log('request_deleted', 'review_requests', $id, []);
+    log_event('info', 'Review request deleted', ['id' => $id]);
+    json_response(['success' => true, 'id' => $id]);
+}
+
 json_error('Method not allowed', 405);
 
 // ─── HELPERS ────────────────────────────────────────────────────────────────

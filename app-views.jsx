@@ -1596,11 +1596,20 @@ function CampaignsView() {
   const [requests, setRequests] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
+  const loadRequests = () => {
     apiFetch('api/requests.php?page=1&per_page=50')
       .then(d => { setRequests(d.requests || d.data || []); setLoading(false); })
       .catch(() => setLoading(false));
-  }, []);
+  };
+
+  useEffect(() => { loadRequests(); }, []);
+
+  const deleteRequest = (id) => {
+    if (!confirm('Biztosan törlöd ezt a kérést?')) return;
+    apiFetch('api/requests.php?id=' + id, { method: 'DELETE' })
+      .then(() => setRequests(prev => prev.filter(r => r.id !== id)))
+      .catch(e => alert('Hiba: ' + e.message));
+  };
 
   // Group by day
   const groups = {};
@@ -1673,14 +1682,20 @@ function CampaignsView() {
                     <div style={{display:'flex', gap:8, flexWrap:'wrap'}}>
                       {items.map((r, i) => (
                         <div key={i} style={{
-                          padding:'4px 10px', borderRadius:6,
+                          display:'flex', alignItems:'center', gap:6,
+                          padding:'4px 8px 4px 10px', borderRadius:6,
                           background: stateColors[r.state] || C.creamSoft,
                           border:`1px solid ${C.line}`, fontSize:11
                         }}>
                           <span style={{fontWeight:600, color:C.navyDeep}}>{r.contact_name || '—'}</span>
-                          <span style={{color:C.mute, marginLeft:6, fontFamily:'"DM Mono", monospace', fontSize:10}}>
+                          <span style={{color:C.mute, marginLeft:2, fontFamily:'"DM Mono", monospace', fontSize:10}}>
                             {r.state}
                           </span>
+                          <button onClick={() => deleteRequest(r.id)} title="Törlés" style={{
+                            marginLeft:2, background:'none', border:'none', cursor:'pointer',
+                            color:C.mute, fontSize:13, lineHeight:1, padding:'0 2px',
+                            borderRadius:3, display:'flex', alignItems:'center'
+                          }} onMouseEnter={e=>e.target.style.color='#c0392b'} onMouseLeave={e=>e.target.style.color=C.mute}>×</button>
                         </div>
                       ))}
                     </div>
