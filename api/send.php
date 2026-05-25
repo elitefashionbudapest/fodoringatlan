@@ -229,6 +229,7 @@ function send_email(array $data): array
         $mail->Password   = SMTP_PASS;
         $mail->Port       = (int)SMTP_PORT;
         $mail->SMTPDebug  = (defined('APP_ENV') && APP_ENV === 'development') ? SMTP::DEBUG_SERVER : SMTP::DEBUG_OFF;
+        $mail->SMTPOptions = ['ssl' => ['verify_peer' => false, 'verify_peer_name' => false, 'allow_self_signed' => true]];
 
         // Encryption
         $secure = defined('SMTP_SECURE') ? strtolower(SMTP_SECURE) : 'tls';
