@@ -280,6 +280,7 @@ if ($method === 'POST') {
                 ? date('Y-m-d H:i:s', strtotime("+{$delay_hours} hours"))
                 : date('Y-m-d H:i:s');
 
+            $nps_token  = bin2hex(random_bytes(24));
             $request_id = db_insert('review_requests', [
                 'contact_id'    => $new_id,
                 'agent_id'      => $data['agent_id'],
@@ -287,6 +288,7 @@ if ($method === 'POST') {
                 'automation_id' => $automation_id ?: null,
                 'channel'       => $channel,
                 'state'         => 'sent',
+                'nps_token'     => $nps_token,
                 'sent_at'       => $scheduled_at,
                 'created_at'    => date('Y-m-d H:i:s'),
             ]);
