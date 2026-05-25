@@ -196,9 +196,9 @@ switch ($method) {
             if (!file_exists($phpmailer_base . '/PHPMailer.php')) {
                 json_error('PHPMailer hiányzik: töltsd fel a vendor/phpmailer/ mappát a szerverre.', 500);
             }
-            require_once $phpmailer_base . '/Exception.php';
-            require_once $phpmailer_base . '/SMTP.php';
-            require_once $phpmailer_base . '/PHPMailer.php';
+            require_once $phpmailer_base . '/exception.php';
+            require_once $phpmailer_base . '/smtp.php';
+            require_once $phpmailer_base . '/phpmailer.php';
 
             $to = sanitize_input($body['test_email'] ?? '');
             if (!filter_var($to, FILTER_VALIDATE_EMAIL)) {

@@ -10,9 +10,9 @@ require_once __DIR__ . '/cors.php';
 require_once __DIR__ . '/auth.php';
 require_once __DIR__ . '/db.php';
 
-require_once __DIR__ . '/../vendor/phpmailer/PHPMailer.php';
-require_once __DIR__ . '/../vendor/phpmailer/SMTP.php';
-require_once __DIR__ . '/../vendor/phpmailer/Exception.php';
+require_once __DIR__ . '/../vendor/phpmailer/phpmailer.php';
+require_once __DIR__ . '/../vendor/phpmailer/smtp.php';
+require_once __DIR__ . '/../vendor/phpmailer/exception.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;

@@ -16,9 +16,9 @@ if (php_sapi_name() !== 'cli') {
 require __DIR__ . '/../api/config.php';
 require __DIR__ . '/../api/db.php';
 
-require_once __DIR__ . '/../vendor/phpmailer/PHPMailer.php';
-require_once __DIR__ . '/../vendor/phpmailer/SMTP.php';
-require_once __DIR__ . '/../vendor/phpmailer/Exception.php';
+require_once __DIR__ . '/../vendor/phpmailer/phpmailer.php';
+require_once __DIR__ . '/../vendor/phpmailer/smtp.php';
+require_once __DIR__ . '/../vendor/phpmailer/exception.php';
 
 use PHPMailer\PHPMailer\PHPMailer;
 use PHPMailer\PHPMailer\SMTP;
