@@ -1065,6 +1065,13 @@ function InboxView() {
   useEffect(() => { apiFetch('api/agents.php').then(d => setAgents(d.data || [])).catch(() => {}); }, []);
   useEffect(() => { apiFetch('api/automations.php').then(d => setAutoModalAutos(d.automations || d.data || [])).catch(() => {}); }, []);
 
+  const deleteRequest = (id) => {
+    if (!confirm('Biztosan törlöd ezt a kérést?')) return;
+    apiFetch('api/requests.php?id=' + id, { method: 'DELETE' })
+      .then(() => setAllItems(prev => prev.filter(r => r.id !== id)))
+      .catch(e => alert('Hiba: ' + e.message));
+  };
+
   const openReply = (item) => {
     setReplyText('');
     setNewState(item.state || 'sent');
@@ -1224,6 +1231,7 @@ function InboxView() {
                   style={{...pillBtn(false), padding:'4px 10px', fontSize:11, opacity: item.active_automation_state ? 0.4 : 1, cursor: item.active_automation_state ? 'not-allowed' : 'pointer'}}
                 >+ Auto</button>
                 <button onClick={() => openReply(item)} style={{...pillBtn(true), padding:'4px 10px', fontSize:11}}>Állapot</button>
+                <button onClick={() => deleteRequest(item.id)} style={{...pillBtn(false), padding:'4px 10px', fontSize:11, color:C.bad, borderColor:C.bad+'66'}} title="Törlés">×</button>
               </div>
             </div>
           ) : (
