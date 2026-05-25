@@ -312,7 +312,7 @@ function insert_templates(PDO $pdo, string $logo_html): void {
         ->execute([
             'email_ertekeles_ugyletat_utan',
             'email',
-            'Köszönjük a bizalmát, {{nev}}!',
+            'Köszönjük a bizalmát, {{ugyfelnev}}!',
             $html1,
             $text1,
             json_encode(['nev','ugynok_nev','ugynok_telefon','review_link_html','review_link'], JSON_UNESCAPED_UNICODE),

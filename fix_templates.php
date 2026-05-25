@@ -104,7 +104,7 @@ $text8 = "Kedves {{nev}}!\n\nNéhány napja küldtem Önnek egy üzenetet Google
 $vars = json_encode(['nev','ugynok_nev','ugynok_telefon','review_link_html','review_link'], JSON_UNESCAPED_UNICODE);
 
 db_run('UPDATE email_templates SET subject=?, body_html=?, body_text=?, variables=? WHERE id=1', [
-    'Köszönjük a bizalmát, {{nev}}!', $html1, $text1, $vars
+    'Köszönjük a bizalmát, {{ugyfelnev}}!', $html1, $text1, $vars
 ]);
 db_run('UPDATE email_templates SET subject=?, body_html=?, body_text=?, variables=? WHERE id=8', [
     'Emlékeztető: értékelje {{nev}} a Fodor Ingatlannal szerzett tapasztalatait', $html8, $text8, $vars
